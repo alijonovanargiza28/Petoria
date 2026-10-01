@@ -30,23 +30,24 @@ export class PropertyResolver {
   constructor(private readonly propertyService: PropertyService) {}
 
   /**=========================== createProperty =============================**/
-
   @Roles(MemberType.AGENT)
   @UseGuards(RolesGuard)
   @Mutation(() => Property)
   public async createProperty(
     @Args("input") input: PropertyInput,
-
     @AuthMember("_id")
     memberId: mongoose.Types.ObjectId,
   ): Promise<Property> {
+    console.log("=================================");
     console.log("Mutation: createProperty");
+    console.log("INPUT:", JSON.stringify(input, null, 2));
+    console.log("MEMBER ID:", memberId);
+    console.log("=================================");
 
     input.memberId = memberId;
 
     return await this.propertyService.createProperty(input);
   }
-
   /**=========================== getProperty =============================**/
 
   @UseGuards(WithoutGuard)
