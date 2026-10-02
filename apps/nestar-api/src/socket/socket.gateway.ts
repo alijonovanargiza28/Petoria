@@ -1,26 +1,90 @@
-import { Logger } from '@nestjs/common';
-import { OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { Server } from 'ws';
+import { Logger } from "@nestjs/common";
+import {
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from "@nestjs/websockets";
+import { Server, WebSocket } from "ws";
 
-@WebSocketGateway({ transports: ["websocket"], secure: false })
+interface MessagePayload {
+  event: string;
+  text: string;
+}
+
+interface InfoPayload {
+  event: string;
+  totalClients: number;
+}
+
+@WebSocketGateway()
 export class SocketGateway implements OnGatewayInit {
-  private logger: Logger = new Logger("SocketEventsGateway");
-  private summaryClient: number = 0; //Bu WebSocket'ga ulangan clientlar sonini saqlaydi.
+  private logger: Logger = new Logger("SocketAvantisGateway");
+  private summaryClient: number = 0;
 
-  public afterInit(server: Server) {
-    //Bu gateway ishga tushgandan keyin avtomatik chaqiriladigan method.
-    this.logger.log(`WebSocket Server Initialized total:${this.summaryClient}`);
+  @WebSocketServer() //@ts-ignore
+  server: Server;
+
+  afterInit(server: Server) {
+    this.logger.verbose(
+      `WebSocket Server initialized, total: ${this.summaryClient}`,
+    );
   }
+
   handleConnection(client: WebSocket, ...args: any[]) {
-    (this.summaryClient++,
-      this.logger.log(`== Client connected total:${this.summaryClient} ==`));
+    this.summaryClient++;
+
+    this.logger.verbose(`Connection & total [${this.summaryClient}]`);
+
+    const infoMsg: InfoPayload = {
+      event: "info",
+      totalClients: this.summaryClient,
+    };
+
+    this.emitMessage(infoMsg);
   }
+
   handleDisconnect(client: WebSocket) {
     this.summaryClient--;
-    this.logger.log(`== Client disconnect left total:${this.summaryClient} ==`);
+
+    this.logger.verbose(`Disconnection & total [${this.summaryClient}]`);
+
+    const infoMsg: InfoPayload = {
+      event: "info",
+      totalClients: this.summaryClient,
+    };
+
+    this.broadcastMessage(client, infoMsg);
   }
-  @SubscribeMessage("message") //"message" nomli eventni tingla.
-  handleMessage(client: WebSocket, payload: any): string {
-    return "Hello world!";
+
+  @SubscribeMessage("message")
+  public async handleMessage(
+    client: WebSocket,
+    payload: string,
+  ): Promise<void> {
+    const newMessage: MessagePayload = {
+      event: "message",
+      text: payload,
+    };
+
+    this.logger.verbose(`NEW MESSAGE: ${payload}`);
+
+    this.emitMessage(newMessage);
+  }
+
+  private broadcastMessage(sender: WebSocket, message: InfoPayload) {
+    this.server.clients.forEach((client) => {
+      if (client !== sender && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(message));
+      }
+    });
+  }
+
+  private emitMessage(message: MessagePayload | InfoPayload) {
+    this.server.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(message));
+      }
+    });
   }
 }
