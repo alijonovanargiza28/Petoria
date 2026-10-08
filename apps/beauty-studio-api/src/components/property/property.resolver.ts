@@ -30,7 +30,7 @@ export class PropertyResolver {
   constructor(private readonly propertyService: PropertyService) {}
 
   /**=========================== createProperty =============================**/
-  @Roles(MemberType.AGENT)
+  @Roles(MemberType.MASTER)
   @UseGuards(RolesGuard)
   @Mutation(() => Property)
   public async createProperty(
@@ -84,7 +84,7 @@ export class PropertyResolver {
   }
   /**=========================== updateProperty =============================**/
 
-  @Roles(MemberType.AGENT)
+  @Roles(MemberType.MASTER)
   @UseGuards(RolesGuard)
   @Mutation(() => Property)
   public async updateProperty(
@@ -115,7 +115,7 @@ export class PropertyResolver {
 
   /**=========================== getAgentProperties =============================**/
 
-  @Roles(MemberType.AGENT)
+  @Roles(MemberType.MASTER)
   @UseGuards(RolesGuard)
   @Query(() => Properties)
   public async getAgentProperties(

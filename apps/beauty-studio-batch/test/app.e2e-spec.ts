@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { BeautyStudioBatchModule } from './../src/beauty-studio-batch.module';
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
+import request from "supertest";
+import { BeautyStudioBatchModule } from "./../src/beauty-studio-batch.module";
 
-describe('BeautyStudioBatchController (e2e)', () => {
+describe("BeautyStudioBatchController (e2e)", () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -15,10 +15,14 @@ describe('BeautyStudioBatchController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it("/ (GET)", () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get("/")
       .expect(200)
-      .expect('Welcome to beautyStudio BATCH Server');
+      .expect("Welcome to beautyStudio BATCH Server");
   });
 });

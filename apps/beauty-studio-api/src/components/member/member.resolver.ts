@@ -5,9 +5,10 @@ import mongoose from "mongoose";
 import { MemberService } from "./member.service";
 
 import {
-  AgentsInquiry,
+  MastersInquiry,
   LoginInput,
   MemberInput,
+  StaffMemberInput,
   MembersInquiry,
 } from "../../libs/dto/member/member.input";
 
@@ -18,7 +19,10 @@ import { AuthMember } from "../auth/decorators/authMember.decorator";
 import { MemberType } from "../../libs/enums/member.enum";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { RolesGuard } from "../auth/guards/roles.guard";
-import { MemberUpdate } from "../../libs/dto/member/member.update";
+import {
+  MemberUpdate,
+  MemberAdminUpdate,
+} from "../../libs/dto/member/member.update";
 
 import {
   getSerialForImage,
@@ -49,6 +53,13 @@ export class MemberResolver {
     return await this.memberService.signup(input);
   }
 
+  @Roles(MemberType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Mutation(() => Member)
+  createStaffMember(@Args("input") input: StaffMemberInput): Promise<Member> {
+    return this.memberService.createStaffMember(input);
+  }
+
   // ========================= LOGIN =========================
 
   @Mutation(() => Member)
@@ -74,7 +85,12 @@ export class MemberResolver {
 
   // ========================= CHECK AUTH ROLES =========================
 
-  @Roles(MemberType.USER, MemberType.AGENT)
+  @Roles(
+    MemberType.CLIENT,
+    MemberType.MASTER,
+    MemberType.RECEPTIONIST,
+    MemberType.ADMIN,
+  )
   @UseGuards(RolesGuard)
   @Query(() => String)
   public async checkAuthRoles(
@@ -96,8 +112,6 @@ export class MemberResolver {
   ): Promise<Member> {
     console.log("Mutation: updateMember");
 
-    delete input._id;
-
     return await this.memberService.updateMember(memberId, input);
   }
 
@@ -117,18 +131,18 @@ export class MemberResolver {
     return await this.memberService.getMember(memberId, targetId);
   }
 
-  // ========================= GET AGENTS =========================
+  // ========================= GET MASTERS =========================
 
   @UseGuards(WithoutGuard)
   @Query(() => Members)
-  public async getAgents(
-    @Args("input") input: AgentsInquiry,
+  public async getMasters(
+    @Args("input") input: MastersInquiry,
     @AuthMember("_id")
     memberId: mongoose.Types.ObjectId,
   ): Promise<Members> {
-    console.log("Query: getAgents");
+    console.log("Query: getMasters");
 
-    return await this.memberService.getAgents(memberId, input);
+    return await this.memberService.getMasters(memberId, input);
   }
 
   // ========================= LIKE MEMBER =========================
@@ -160,13 +174,23 @@ export class MemberResolver {
     return await this.memberService.getAllMemberByAdmin(input);
   }
 
+  @Roles(MemberType.ADMIN, MemberType.RECEPTIONIST)
+  @UseGuards(RolesGuard)
+  @Query(() => Members)
+  getClientsForStaff(@Args("input") input: MembersInquiry): Promise<Members> {
+    return this.memberService.getAllMemberByAdmin({
+      ...input,
+      search: { ...input.search, memberType: MemberType.CLIENT },
+    });
+  }
+
   // ========================= ADMIN UPDATE =========================
 
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation(() => Member)
   public async updateMemberByAdmin(
-    @Args("input") input: MemberUpdate,
+    @Args("input") input: MemberAdminUpdate,
   ): Promise<Member> {
     console.log("Mutation: updateMemberByAdmin");
 

@@ -21,7 +21,7 @@ import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),//env 
+    ConfigModule.forRoot({ envFilePath: ".env.beauty-studio" }), // env
     GraphQLModule.forRoot({ //reast api => Graphql api 
       driver: ApolloDriver,
       playground: true,

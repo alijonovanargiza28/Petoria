@@ -42,8 +42,7 @@ export class Member {
   @Field(() => String, { nullable: true })
   memberDesc?: string;
 
-  @Field(() => Int)
-  memberProperties!: number;
+  authVersion?: number;
 
   @Field(() => Int)
   memberArticles!: number;
@@ -66,8 +65,6 @@ export class Member {
   @Field(() => Int)
   memberPoints!: number;
 
-  @Field(() => Int)
-  memberRank!: number;
   @Field(() => Int)
   memberWarnings!: number;
 

@@ -1,34 +1,16 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { AuthService } from '../auth.service';
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { AuthService } from "../auth.service";
+import { bearerToken, MemberRequest } from "./auth.guard";
 
 @Injectable()
 export class WithoutGuard implements CanActivate {
-	constructor(private authService: AuthService) {}
-
-	async canActivate(context: ExecutionContext ): Promise<boolean > {
-		console.info('--- @guard() Authentication [WithoutGuard] ---');
-if (context.getType<string>() === "graphql") {
-  const request = context.getArgByIndex(2).req,
-    bearerToken = request.headers.authorization;
-
-  if (bearerToken) {
-    try {
-      const token = bearerToken.split(" ")[1],
-        authMember = await this.authService.verifyToken(token);
-      request.body.authMember = authMember;
-    } catch (err) {
-      request.body.authMember = null;
-    }
-  } else request.body.authMember = null;
-
-  console.log(
-    "memberNick[without] =>",
-    request.body.authMember?.memberNick ?? "none",
-  );
-  
-  return true;
-}
-return true;
-		// description => http, rpc, gprs and etc are ignored
-	}
+  constructor(private readonly authService: AuthService) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (context.getType<string>() !== "graphql") return false;
+    const { req } = context.getArgByIndex<{ req: MemberRequest }>(2);
+    req.body.authMember = req.headers.authorization
+      ? await this.authService.verifyToken(bearerToken(req))
+      : null;
+    return true;
+  }
 }

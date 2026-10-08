@@ -34,7 +34,7 @@ export class BoardArticleInput {
 }
 
 @InputType()
-class BAISearch {
+class BMasterSearch {
   @IsOptional()
   @Field(() => BoardArticleCategory, { nullable: true })
   articleCategory?: BoardArticleCategory;
@@ -70,12 +70,12 @@ export class BoardArticlesInquiry {
   direction?: Direction;
 
   @IsNotEmpty()
-  @Field(() => BAISearch)
-  search!: BAISearch;
+  @Field(() => BMasterSearch)
+  search!: BMasterSearch;
 }
 
 @InputType()
-class ABAISearch {
+class ABMasterSearch {
   @IsOptional()
   @Field(() => BoardArticleStatus, { nullable: true })
   articleStatus?: BoardArticleStatus;
@@ -107,6 +107,6 @@ export class AllBoardArticlesInquiry {
   direction?: Direction;
 
   @IsNotEmpty()
-  @Field(() => ABAISearch)
-  search!: ABAISearch;
+  @Field(() => ABMasterSearch)
+  search!: ABMasterSearch;
 }

@@ -9,9 +9,10 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 
 import {
-  AgentsInquiry,
+  MastersInquiry,
   LoginInput,
   MemberInput,
+  StaffMemberInput,
   MembersInquiry,
 } from "../../libs/dto/member/member.input";
 
@@ -21,7 +22,10 @@ import { Direction, Message } from "../../libs/enums/common.enum";
 
 import { AuthService } from "../auth/auth.service";
 
-import { MemberUpdate } from "../../libs/dto/member/member.update";
+import {
+  MemberUpdate,
+  MemberAdminUpdate,
+} from "../../libs/dto/member/member.update";
 
 import { StatisticModifier, T } from "../../libs/types/common";
 
@@ -64,7 +68,13 @@ export class MemberService {
     );
 
     try {
-      const result = await this.memberModel.create(input);
+      const result = await this.memberModel.create({
+        memberNick: input.memberNick,
+        memberPhone: input.memberPhone,
+        memberPassword: input.memberPassword,
+        memberAuthType: input.memberAuthType,
+        memberType: MemberType.CLIENT,
+      });
 
       result.accessToken = await this.authService.createToken(result);
 
@@ -77,6 +87,41 @@ export class MemberService {
 
       throw new BadRequestException(Message.USED_MEMBER_NICK_OR_PHONE);
     }
+  }
+
+  public async createStaffMember(input: StaffMemberInput): Promise<Member> {
+    if (
+      ![MemberType.MASTER, MemberType.RECEPTIONIST, MemberType.ADMIN].includes(
+        input.memberType,
+      )
+    )
+      throw new BadRequestException("Invalid staff role");
+    return this.memberModel.create({
+      memberNick: input.memberNick,
+      memberPhone: input.memberPhone,
+      memberPassword: await this.authService.hashPassword(input.memberPassword),
+      memberAuthType: input.memberAuthType,
+      memberType: input.memberType,
+    });
+  }
+
+  private async profileFields(input: MemberUpdate): Promise<Partial<Member>> {
+    const fields: Partial<Member> = {};
+    for (const key of [
+      "memberPhone",
+      "memberNick",
+      "memberFullName",
+      "memberImage",
+      "memberAddress",
+      "memberDesc",
+    ] as const) {
+      if (input[key] !== undefined) fields[key] = input[key];
+    }
+    if (input.memberPassword !== undefined)
+      fields.memberPassword = await this.authService.hashPassword(
+        input.memberPassword,
+      );
+    return fields;
   }
 
   // ========================= LOGIN =========================
@@ -125,8 +170,14 @@ export class MemberService {
           _id: memberId,
           memberStatus: MemberStatus.ACTIVE,
         },
-        input,
         {
+          $set: await this.profileFields(input),
+          ...(input.memberPassword !== undefined
+            ? { $inc: { authVersion: 1 } }
+            : {}),
+        },
+        {
+          runValidators: true,
           new: true,
         },
       )
@@ -235,16 +286,16 @@ export class MemberService {
       : [];
   }
 
-  // ========================= GET AGENTS =========================
+  // ========================= GET MASTERS =========================
 
-  public async getAgents(
+  public async getMasters(
     memberId: Types.ObjectId,
-    input: AgentsInquiry,
+    input: MastersInquiry,
   ): Promise<Members> {
     const { text } = input.search;
 
     const match: T = {
-      memberType: MemberType.AGENT,
+      memberType: MemberType.MASTER,
 
       memberStatus: MemberStatus.ACTIVE,
     };
@@ -412,11 +463,27 @@ export class MemberService {
 
   // ========================= UPDATE MEMBER BY ADMIN =========================
 
-  public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
+  public async updateMemberByAdmin(input: MemberAdminUpdate): Promise<Member> {
     const result = await this.memberModel
-      .findByIdAndUpdate(input._id, input, {
-        new: true,
-      })
+      .findByIdAndUpdate(
+        input._id,
+        {
+          $set: {
+            ...(await this.profileFields(input)),
+            ...(input.memberType != null
+              ? { memberType: input.memberType }
+              : {}),
+            ...(input.memberStatus != null
+              ? { memberStatus: input.memberStatus }
+              : {}),
+          },
+          $inc: { authVersion: 1 },
+        },
+        {
+          runValidators: true,
+          new: true,
+        },
+      )
       .exec();
 
     if (!result) {
@@ -431,24 +498,17 @@ export class MemberService {
   public async memberStatusEditor(input: StatisticModifier): Promise<Member> {
     const { _id, targetKey, modifier } = input;
 
-    console.log("INPUT ID:", _id);
-
-    console.log("MODEL COLLECTION:", this.memberModel.collection.name);
-
-    console.log("MODEL DB:", this.memberModel.db.name);
-
-    const allMembers = await this.memberModel
-      .find({})
-      .select("_id memberNick memberArticles")
-      .limit(10)
-      .lean()
-      .exec();
-
-    console.log("MEMBERS:", allMembers);
-
-    const member = await this.memberModel.findById(_id).exec();
-
-    console.log("FOUND MEMBER:", member);
+    if (
+      ![
+        "memberArticles",
+        "memberFollowers",
+        "memberFollowings",
+        "memberLikes",
+        "memberViews",
+        "memberComments",
+      ].includes(targetKey)
+    )
+      throw new BadRequestException("Unsupported member statistic");
 
     const result = await this.memberModel
       .findByIdAndUpdate(

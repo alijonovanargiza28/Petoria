@@ -7,15 +7,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
 import PropertySchema from 'apps/beauty-studio-api/src/schemas/Property.model';
-import MemberSchema from 'apps/beauty-studio-api/src/schemas/Member.model';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ envFilePath: ".env.beauty-studio" }),
     DatabaseModule, 
     ScheduleModule.forRoot(),
     MongooseModule.forFeature([{name:'Property', schema:PropertySchema}]),
-    MongooseModule.forFeature([{name:'Member',schema:MemberSchema}])
   ],
   controllers: [BeautyStudioBatchController],
   providers: [BeautyStudioBatchService],

@@ -4,13 +4,14 @@ import {
   MemberStatus,
   MemberType,
 } from "../libs/enums/member.enum";
-import { defaultFieldResolver } from "graphql";
+
 const MemberSchema = new Schema(
   {
+    authVersion: { type: Number, default: 0, required: true },
     memberType: {
       type: String,
       enum: MemberType,
-      default: MemberType.USER,
+      default: MemberType.CLIENT,
     },
     memberStatus: {
       type: String,
@@ -49,10 +50,6 @@ const MemberSchema = new Schema(
     memberDesc: {
       type: String,
     },
-    memberProperties: {
-      type: Number,
-      default: 0,
-    },
     memberArticles: {
       type: Number,
       default: 0,
@@ -74,10 +71,6 @@ const MemberSchema = new Schema(
       default: 0,
     },
     memberComments: {
-      type: Number,
-      default: 0,
-    },
-    memberRank: {
       type: Number,
       default: 0,
     },

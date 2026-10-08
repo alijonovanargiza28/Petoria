@@ -50,11 +50,6 @@ export class PropertyService {
     try {
       const result = await this.propertyModel.create(input);
 
-      await this.memberService.memberStatusEditor({
-        _id: shapeIntoMongoObjectId(result.memberId),
-        targetKey: "memberProperties",
-        modifier: 1,
-      });
 
       return result;
     } catch (err) {
@@ -163,13 +158,7 @@ export class PropertyService {
       throw new InternalServerErrorException(Message.UPDATE_FAILED);
     }
 
-    if (soldAt || deletedAt) {
-      await this.memberService.memberStatusEditor({
-        _id: memberId,
-        targetKey: "memberProperties",
-        modifier: -1,
-      });
-    }
+
 
     return result;
   }
@@ -524,13 +513,7 @@ console.log("result+++++++++++++++",result)
       throw new InternalServerErrorException(Message.UPDATE_FAILED);
     }
 
-    if (soldAt || deletedAt) {
-      await this.memberService.memberStatusEditor({
-        _id: shapeIntoMongoObjectId(result.memberId),
-        targetKey: "memberProperties",
-        modifier: -1,
-      });
-    }
+
 
     return result;
   }

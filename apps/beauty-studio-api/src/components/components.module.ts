@@ -1,3 +1,5 @@
+import { CategoryModule } from "./category/category.module";
+import { ServiceModule } from "./service/service.module";
 import { Module } from "@nestjs/common";
 import { MemberModule } from "./member/member.module";
 import { PropertyModule } from "./property/property.module";
@@ -10,6 +12,8 @@ import { BoardArticleModule } from "./board-article/board-article.module";
 
 @Module({
   imports: [
+    CategoryModule,
+    ServiceModule,
     MemberModule,
     PropertyModule,
     BoardArticleModule,

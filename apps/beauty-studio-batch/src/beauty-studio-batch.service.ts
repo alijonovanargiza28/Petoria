@@ -1,11 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Member } from "apps/beauty-studio-api/src/libs/dto/member/member";
 import { Property } from "apps/beauty-studio-api/src/libs/dto/property/property";
-import {
-  MemberStatus,
-  MemberType,
-} from "apps/beauty-studio-api/src/libs/enums/member.enum";
 import { PropertyStatus } from "apps/beauty-studio-api/src/libs/enums/property.enum";
 import { Model } from "mongoose";
 
@@ -13,7 +8,6 @@ import { Model } from "mongoose";
 export class BeautyStudioBatchService {
   constructor(
     @InjectModel("Property") private readonly propertyModel: Model<Property>,
-    @InjectModel("Member") private readonly memberModel: Model<Member>,
   ) {}
 
   public async batchRollback(): Promise<void> {
@@ -23,12 +17,6 @@ export class BeautyStudioBatchService {
           propertyStatus: PropertyStatus.ACTIVE,
         },
         { propertyRank: 0 },
-      )
-      .exec();
-    await this.memberModel
-      .updateMany(
-        { memberStatus: MemberStatus.ACTIVE, memberType: MemberType.AGENT },
-        { memberRank: 0 },
       )
       .exec();
     console.log("batchRollback");
@@ -48,30 +36,6 @@ export class BeautyStudioBatchService {
     });
     await Promise.all(promisedList); //bo‘lmasa, method barcha update'lar tugashini kutmasligi mumkin.
   }
-  public async batchTopAgents(): Promise<void> {
-    const agents: Member[] = await this.memberModel
-      .find({ memberType: MemberType.AGENT, memberRank: 0 })
-      .exec();
-    const promisedList = agents.map(async (ele: Member) => {
-      const {
-        _id,
-        memberProperties,
-        memberLikes,
-        memberArticles,
-        memberViews,
-      } = ele;
-      const rank =
-        memberProperties * 5 +
-        memberArticles * 3 +
-        memberLikes * 2 +
-        memberViews * 1;
-      return await this.memberModel.findByIdAndUpdate(_id, {
-        memberRank: rank,
-      });
-    });
-    await Promise.all(promisedList);
-  }
-
   public getHello(): string {
     return "Welcome to beautyStudio BATCH Server";
   }

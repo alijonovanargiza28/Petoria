@@ -1,31 +1,29 @@
-import { BadRequestException, CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from '../auth.service';
-import { Message } from 'apps/beauty-studio-api/src/libs/enums/common.enum';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { AuthService } from "../auth.service";
+import { Member } from "../../../libs/dto/member/member";
+
+export interface MemberRequest {
+  headers: { authorization?: string };
+  body: { authMember?: Member | null };
+}
+export function bearerToken(request: MemberRequest): string {
+  const match = request.headers.authorization?.match(/^Bearer (\S+)$/);
+  if (!match) throw new UnauthorizedException("Bearer token required");
+  return match[1];
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-	constructor(private authService: AuthService) {}
-
-	async canActivate(context: ExecutionContext | any): Promise<boolean> {
-		console.info('--- @guard() Authentication [AuthGuard] ---');
-
-		if (context.contextType === 'graphql') {
-			const request = context.getArgByIndex(2).req;
-
-			const bearerToken = request.headers.authorization;
-			if (!bearerToken) throw new BadRequestException(Message.TOKEN_NOT_EXIST);
-
-			const token = bearerToken.split(' ')[1],
-				authMember = await this.authService.verifyToken(token);
-			if (!authMember) throw new UnauthorizedException(Message.NOT_AUTHENTICATED);
-
-			console.log('memberNick[auth] =>', authMember.memberNick);
-			request.body.authMember = authMember;
-
-			return true;
-		}
-
-		// description => http, rpc, gprs and etc are ignored
-		return true
-	}
+  constructor(private readonly authService: AuthService) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (context.getType<string>() !== "graphql") return false;
+    const { req } = context.getArgByIndex<{ req: MemberRequest }>(2);
+    req.body.authMember = await this.authService.verifyToken(bearerToken(req));
+    return true;
+  }
 }

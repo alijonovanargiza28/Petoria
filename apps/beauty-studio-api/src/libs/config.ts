@@ -7,12 +7,11 @@ import { T } from "./types/common";
 // SORT CONFIGURATION
 // =========================================================
 
-export const availableAgentSorts = [
+export const availableMasterSorts = [
   "createdAt",
   "updatedAt",
   "memberLikes",
   "memberViews",
-  "memberRank",
 ];
 
 export const availableMemberSorts = [
