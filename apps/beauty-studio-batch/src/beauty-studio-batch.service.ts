@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Member } from "apps/nestar-api/src/libs/dto/member/member";
-import { Property } from "apps/nestar-api/src/libs/dto/property/property";
+import { Member } from "apps/beauty-studio-api/src/libs/dto/member/member";
+import { Property } from "apps/beauty-studio-api/src/libs/dto/property/property";
 import {
   MemberStatus,
   MemberType,
-} from "apps/nestar-api/src/libs/enums/member.enum";
-import { PropertyStatus } from "apps/nestar-api/src/libs/enums/property.enum";
+} from "apps/beauty-studio-api/src/libs/enums/member.enum";
+import { PropertyStatus } from "apps/beauty-studio-api/src/libs/enums/property.enum";
 import { Model } from "mongoose";
 
 @Injectable()
-export class NestarBatchService {
+export class BeautyStudioBatchService {
   constructor(
     @InjectModel("Property") private readonly propertyModel: Model<Property>,
     @InjectModel("Member") private readonly memberModel: Model<Member>,
@@ -73,6 +73,6 @@ export class NestarBatchService {
   }
 
   public getHello(): string {
-    return "Welcome to Nestar BATCH Server";
+    return "Welcome to beautyStudio BATCH Server";
   }
 }

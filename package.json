@@ -1,5 +1,5 @@
 {
-	"name": "nestars",
+	"name": "beauty-studio",
 	"version": "0.0.1",
 	"description": "",
 	"author": "",
@@ -10,16 +10,17 @@
 		"format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
 		"start": "nest start",
 		"start:dev": "nest start --watch",
-		"start:dev:batch": "nest start nestar-batch --watch",
+		"start:dev:batch": "nest start beauty-studio-batch --watch",
 		"start:debug": "nest start --debug --watch",
-		"start:prod": "node dist/apps/nestars-api/main",
-		"start:prod:batch": "node dist/apps/nestar-batch/main",
+		"start:prod": "node dist/apps/beauty-studio-api/main",
+		"start:prod:batch": "node dist/apps/beauty-studio-batch/main",
+		"lint:check": "eslint \"apps/**/*.ts\"",
 		"lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-		"test:e2e": "jest --config ./apps/nestars-api/test/jest-e2e.json"
+		"test:e2e": "jest --config ./apps/beauty-studio-api/test/jest-e2e.json"
 	},
 	"dependencies": {
 		"@apollo/server": "^4.9.5",

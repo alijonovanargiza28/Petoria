@@ -1,6 +1,6 @@
 import { Controller, Get, Logger } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
-import { NestarBatchService } from "./nestar-batch.service";
+import { BeautyStudioBatchService } from "./beauty-studio-batch.service";
 import {
   BATCH_ROLLBACK,
   BATCH_TOP_PROPERTIES,
@@ -8,10 +8,10 @@ import {
 } from "./lib/config";
 
 @Controller()
-export class NestarBatchController {
+export class BeautyStudioBatchController {
   private logger: Logger = new Logger("BatchController");
-  //Bu NestarBatchController serverda avtomatik ravishda ma'lum vaqtda ishlarni bajarish uchun yozilgan.
-  constructor(private readonly nestarBatchService: NestarBatchService) {}
+  //Bu BeautyStudioBatchController serverda avtomatik ravishda ma'lum vaqtda ishlarni bajarish uchun yozilgan.
+  constructor(private readonly beautyStudioBatchService: BeautyStudioBatchService) {}
 
   // Har kuni 01:00:00 da ishlaydi
   @Cron("0 0 1 * * *", { name: BATCH_ROLLBACK })
@@ -20,7 +20,7 @@ export class NestarBatchController {
       this.logger["context"] = BATCH_ROLLBACK;
       this.logger.debug("EXECUTED!");
 
-      await this.nestarBatchService.batchRollback();
+      await this.beautyStudioBatchService.batchRollback();
     } catch (error) {
       this.logger.error(error);
     }
@@ -33,7 +33,7 @@ export class NestarBatchController {
       this.logger["context"] = BATCH_TOP_PROPERTIES;
       this.logger.debug("EXECUTED!");
 
-      await this.nestarBatchService.batchTopProperties();
+      await this.beautyStudioBatchService.batchTopProperties();
     } catch (error) {
       this.logger.error(error);
     }
@@ -46,7 +46,7 @@ export class NestarBatchController {
       this.logger["context"] = BATCH_TOP_AGENTS;
       this.logger.debug("EXECUTED!");
 
-      await this.nestarBatchService.batchTopAgents();
+      await this.beautyStudioBatchService.batchTopAgents();
     } catch (error) {
       this.logger.error(error);
     }
@@ -54,6 +54,6 @@ export class NestarBatchController {
 
   @Get()
   getHello(): string {
-    return this.nestarBatchService.getHello();
+    return this.beautyStudioBatchService.getHello();
   }
 }

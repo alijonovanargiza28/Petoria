@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { NestarBatchController } from './nestar-batch.controller';
-import { NestarBatchService } from './nestar-batch.service';
+import { BeautyStudioBatchController } from './beauty-studio-batch.controller';
+import { BeautyStudioBatchService } from './beauty-studio-batch.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-import PropertySchema from 'apps/nestar-api/src/schemas/Property.model';
-import MemberSchema from 'apps/nestar-api/src/schemas/Member.model';
+import PropertySchema from 'apps/beauty-studio-api/src/schemas/Property.model';
+import MemberSchema from 'apps/beauty-studio-api/src/schemas/Member.model';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import MemberSchema from 'apps/nestar-api/src/schemas/Member.model';
     MongooseModule.forFeature([{name:'Property', schema:PropertySchema}]),
     MongooseModule.forFeature([{name:'Member',schema:MemberSchema}])
   ],
-  controllers: [NestarBatchController],
-  providers: [NestarBatchService],
+  controllers: [BeautyStudioBatchController],
+  providers: [BeautyStudioBatchService],
 })
-export class NestarBatchModule {}
+export class BeautyStudioBatchModule {}
